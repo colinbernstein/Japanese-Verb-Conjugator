@@ -1,3 +1,9 @@
+/**
+ * @Author Colin Bernstein
+ * @Title: Japanese Verb Conjugator
+ * @version 1.3
+ */
+
 import com.voicerss.tts.AudioFormat;
 import com.voicerss.tts.Languages;
 import com.voicerss.tts.VoiceParameters;
@@ -10,55 +16,14 @@ import javax.sound.sampled.DataLine;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Conjugator extends JPanel implements ActionListener {
-    private JFrame frame, colorFrame;
-    private AutoSuggestor autoSuggestor;
-    private JTextField field;
-    private JLabel[] conjugatedLabels, furiganaLabels, conjugationTypeLabels;
-    private JButton[] speakButtons = new JButton[conjugationTypes.length];
-    private JLabel furiganaLabel, translationLabel, verbTypeLabel, transitivityLabel;
-    private JButton englishOrJapaneseButton, enterColorSelectorButton;
-    private JToggleButton furiganaButton;
-    private Map<String, VerbInfoPacket> lexicon;
-    private VerbInfoPacket currentPacket;
-    private Point colorFrameRelativePos = new Point(60, 300);
-    private boolean englishOrJapanese = true;
     
-    private static final String[] conjugationTypes = {"Long", "Formal Negative", "Formal Past", "Formal Negative Past",
-            "Short", "Informal Negative", "Informal Past", "Informal Negative Past",
-            "Te", "Imperative", "Informal Volitional", "Formal Volitional", "Hypothetical", "Conditional",
-            "Potential", "Passive", "Causative", "Causative Passive"};
     
-    private static final String[] conjugationTypesJapanese = {"ます形", "ます形（否定形)", "ます形（過去形)", "ます形（否定・過去形)", "辞書形",
-            "否定形", "た形", "た形（否定・過去形）", "て形", "命令形", "意向形", "ましょう形", "仮定形", "条件形", "可能形", "受身形", "使役形", "使役受身形"};
-    
-    private static final String[][] irregulars = {{"来きます", "来きません", "来きました", "来きませんでした",
-            "来る", "来ない", "来た", "来なかった", "来て", "来い", "来よう", "来ましょう", "来れば", "来たら", "来られる", "来られる", "来させる", "来させられる"},
-            {"行きます", "行きません", "行きました", "行きませんでした", "行く", "行かない", "行った", "行かなかった",
-                    "行って", "行け", "行こう", "行きましょう", "行けば", "行ったら", "行ける", "行かれる", "行かせる", "行かせられる"},
-            {"下さいます", "下さいません", "下さいました", "下さいませんでした", "下さる", "下さらない", "下さった", "下さらなかった",
-                    "下さって", "下され", "下さろう", "下さいましょう", "下されば", "下さったら", "下される", "下さられる", "下さらせる", "下さらせられる"},
-            {"なさいます", "なさいません", "なさいました", "なさいませんでした", "なさる", "なさらない", "なさった", "なさらなかった",
-                    "なさって", "なされ", "なさろう", "なさいましょう", "なされば", "なさったら", "なされる", "なさられる", "なさらせる", "なさらせられる"},
-            {"あります", "ありません", "ありました", "ありませんでした", "ある", "ない", "あった", "なかった",
-                    "あって", "あれ", "あろう", "ありましょう", "あれば", "あったら", "あれる", "No Passive Form", "あらせる", "あらせられる"},
-            {"ございます", "ございません", "ございました", "ございませんでした", "ござる", "ござらない", "ござった", "ござらなかった",
-                    "ござって", "ござれ", "ござろう", "ございましょう", "ござれば", "ござったら", "ござれる", "No Passive Form", "ござらせる", "ござらせられる"},
-            {"いらっしゃいます", "いらっしゃいません", "いらっしゃいました", "いらっしゃいませんでした", "いらっしゃる", "いらっしゃらない", "いらっしゃった",
-                    "いらっしゃらなかった", "いらっしゃって", "いらっしゃれ", "いらっしゃろう", "いらっしゃいましょう", "いらっしゃれば", "いらっしゃったら",
-                    "いらっしゃれる", "No Passive Form", "いらっしゃらせる", "いらっしゃらせられる"},
-            {"おっしゃいます", "おっしゃいません", "おっしゃいました", "おっしゃいませんでした", "おっしゃる", "おっしゃらない", "おっしゃった", "おっしゃらなかった",
-                    "おっしゃって", "おっしゃれ", "おっしゃろう", "おっしゃいましょう", "おっしゃれば", "おっしゃったら", "おっしゃれる", "おっしゃられる",
-                    "おっしゃらせる", "おっしゃらせられる"}};
-    private static final String[] kuruFuriganas = {"き", "き", "き", "き", "く", "こ", "き", "こ", "き", "こ", "こ", "き", "く", "き", "こ", "こ", "こ", "こ"};
-    
-    private static final javax.sound.sampled.AudioFormat format =
-            new javax.sound.sampled.AudioFormat(46000, 16, 1, true, false);
+    //Define encoded constants for conjugation types and verb types
     
     private static final byte LONG = 0;
     private static final byte FORMAL_NEGATIVE = 1;
@@ -87,14 +52,75 @@ public class Conjugator extends JPanel implements ActionListener {
     private static final byte INTRANSITIVE = 6;
     private static final byte NO_TRANSITIVITY = 7;
     
+    private JFrame frame, colorFrame;
+    private AutoSuggestor autoSuggestor;
+    private JTextField field;
+    private JLabel[] conjugatedLabels, furiganaLabels, conjugationTypeLabels;
+    private JButton[] speakButtons = new JButton[conjugationTypes.length];
+    private JLabel furiganaLabel, translationLabel, verbTypeLabel, transitivityLabel;
+    private JButton englishOrJapaneseButton, enterColorSelectorButton;
+    private JToggleButton furiganaButton;
+    private Map<String, VerbInfoPacket> lexicon;
+    private VerbInfoPacket currentPacket;
+    private Point colorFrameRelativePos = new Point(60, 300);
+    private boolean englishOrJapanese = true;
+    
+    
+    //Define labels and irregular constants
+    
+    private static final String[] conjugationTypes = {"Long", "Formal Negative", "Formal Past", "Formal Negative Past",
+            "Short", "Informal Negative", "Informal Past", "Informal Negative Past",
+            "Te", "Imperative", "Informal Volitional", "Formal Volitional", "Hypothetical", "Conditional",
+            "Potential", "Passive", "Causative", "Causative Passive"};
+    
+    private static final String[] conjugationTypesJapanese = {"ます形", "ます形（否定形)", "ます形（過去形)", "ます形（否定・過去形)", "辞書形",
+            "否定形", "た形", "た形（否定・過去形）", "て形", "命令形", "意向形", "ましょう形", "仮定形", "条件形", "可能形", "受身形", "使役形", "使役受身形"};
+    
+    private static final String[][] irregulars = {{"来きます", "来きません", "来きました", "来きませんでした",
+            "来る", "来ない", "来た", "来なかった", "来て", "来い", "来よう", "来ましょう", "来れば", "来たら", "来られる", "来られる", "来させる", "来させられる"},
+            {"行きます", "行きません", "行きました", "行きませんでした", "行く", "行かない", "行った", "行かなかった",
+                    "行って", "行け", "行こう", "行きましょう", "行けば", "行ったら", "行ける", "行かれる", "行かせる", "行かされる"},
+            {"下さいます", "下さいません", "下さいました", "下さいませんでした", "下さる", "下さらない", "下さった", "下さらなかった",
+                    "下さって", "下され", "下さろう", "下さいましょう", "下されば", "下さったら", "下される", "下さられる", "下さらせる", "下さらせられる"},
+            {"なさいます", "なさいません", "なさいました", "なさいませんでした", "なさる", "なさらない", "なさった", "なさらなかった",
+                    "なさって", "なされ", "なさろう", "なさいましょう", "なされば", "なさったら", "なされる", "なさられる", "なさらせる", "なさらせられる"},
+            {"あります", "ありません", "ありました", "ありませんでした", "ある", "ない", "あった", "なかった",
+                    "あって", "あれ", "あろう", "ありましょう", "あれば", "あったら", "あれる", "No Passive Form", "あらせる", "あらせられる"},
+            {"ございます", "ございません", "ございました", "ございませんでした", "ござる", "ござらない", "ござった", "ござらなかった",
+                    "ござって", "ござれ", "ござろう", "ございましょう", "ござれば", "ござったら", "ござれる", "No Passive Form", "ござらせる", "ござらせられる"},
+            {"いらっしゃいます", "いらっしゃいません", "いらっしゃいました", "いらっしゃいませんでした", "いらっしゃる", "いらっしゃらない", "いらっしゃった",
+                    "いらっしゃらなかった", "いらっしゃって", "いらっしゃれ", "いらっしゃろう", "いらっしゃいましょう", "いらっしゃれば", "いらっしゃったら",
+                    "いらっしゃれる", "No Passive Form", "いらっしゃらせる", "いらっしゃらせられる"},
+            {"おっしゃいます", "おっしゃいません", "おっしゃいました", "おっしゃいませんでした", "おっしゃる", "おっしゃらない", "おっしゃった", "おっしゃらなかった",
+                    "おっしゃって", "おっしゃれ", "おっしゃろう", "おっしゃいましょう", "おっしゃれば", "おっしゃったら", "おっしゃれる", "おっしゃられる",
+                    "おっしゃらせる", "おっしゃらせられる"}};
+    private static final String[] kuruFuriganas = {"き", "き", "き", "き", "く", "こ", "き", "こ", "き", "こ", "こ", "き", "く", "き", "こ", "こ", "こ", "こ"};
+    
+    
+    /**
+     * Main method. Calls createAndShowGUI on the Swing Event Dispatch Thread.
+     * This allows for a streamlined and thread-safe environment for the GUI elements.
+     * Initialize all elements in the JPanel including the search window, buttons, and labels.
+     * Display and paint all elements.
+     *
+     * @param args No arguments are needed in launching
+     */
     public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(Conjugator::createAndShowGUI);
     }
     
+    /**
+     * Creates a new Conjugator object.
+     * Displaying the elements of the GUI happens inside of the constructor of Conjugator.
+     */
     private static void createAndShowGUI() {
         new Conjugator();
     }
     
+    /**
+     * Creates a conjugator object comprised of a JPanel inside of a JFrame.
+     * Defines the action listeners for the movement of the main window to prompt updates and to move other windows in sync.
+     */
     private Conjugator() {
         super(new BorderLayout());
         frame = new JFrame("Japanese Verb Conjugator");
@@ -189,11 +215,6 @@ public class Conjugator extends JPanel implements ActionListener {
         enterColorSelectorButton.setFocusable(false);
         add(enterColorSelectorButton);
         
-        /*JLayeredPane furiganaLabelPanel = new JLayeredPane();
-        furiganaLabelPanel.setBounds(25, 15, 180, 20);
-        furiganaLabelPanel.setOpaque(true);
-        furiganaLabelPanel.*/
-        
         furiganaLabel = new JLabel("Furigana", JLabel.CENTER);
         translationLabel = new JLabel("English Translation", JLabel.CENTER);
         verbTypeLabel = new JLabel("Verb Type", JLabel.CENTER);
@@ -243,7 +264,7 @@ public class Conjugator extends JPanel implements ActionListener {
             speakButtons[i].setFocusable(false);
             speakButtons[i].setEnabled(false);
             furiganaLabels[i] = new JLabel("", JLabel.CENTER);
-            furiganaLabels[i].setBounds(587, (46 * i) + 94, 100, 25);
+            furiganaLabels[i].setBounds(587, (46 * i) + 96, 100, 25);
             furiganaLabels[i].setFont(new Font("TimesRoman", Font.BOLD, 15));
             furiganaLabels[i].setVisible(true);
             add(furiganaLabels[i]);
@@ -258,13 +279,19 @@ public class Conjugator extends JPanel implements ActionListener {
         frame.setContentPane(newContentPane);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setOpacity(1.00f);
         frame.setVisible(true);
         frame.getContentPane().setBackground(makeTransparent(ColorMap.BACKGROUND.color()));
         frame.getContentPane().setForeground(makeTransparent(ColorMap.BACKGROUND.color()));
         repaint();
     }
     
+    /**
+     * Determine whether the given word (in english, romaji, furigana, or kanji) is in the lexicon.
+     * If so, get the corresponding data packet for that entry from the lexicon hash table.
+     * Dissect the info packet and accordingly display conjugated forms based on the verb class (ichidan, godan, suru, and irregular).
+     *
+     * @param word - A verb (in english, romaji, furigana, or kanji)
+     */
     void conjugate(String word) {
         if (meaningParser(word).length == 0) {
             clear();
@@ -289,27 +316,35 @@ public class Conjugator extends JPanel implements ActionListener {
             currentPacket = null;
             return;
         }
+        
+        //Form the Japanese stem of the verb and find the ending character(s)
+        //Get the verb's corresponding info packet from the lexicon TreeSet
         currentPacket = lexicon.get(word);
         String stem = word.substring(0, word.length() - (currentPacket.getType() != SURU ? 1 : 2));
         String ending = word.substring(word.length() - (currentPacket.getType() != SURU ? 1 : 2));
         String furigana = currentPacket.getFurigana();
         
+        //Set the furigana labels for the one exception to the regularity of a verb's kanji reading (kuru - to come).
         if (word.equals("来る")) {
             for (byte i = 0; i < conjugationTypes.length; i++) {
                 furiganaLabels[i].setText(kuruFuriganas[i]);
-                furiganaLabels[i].setBounds(512, (46 * i) + 94, 100, 25);
+                furiganaLabels[i].setBounds(587, (46 * i) + 96, 100, 25);
             }
         } else
+            //If it is a regular verb, derive and display the proper furigana for the kanji in the verb.
             furiganaOfKanji(word, furigana);
         
-        verbTypeLabel.setText(encodedStrings(currentPacket.getType()));
-        furiganaLabel.setText(furigana);
-        translationLabel.setText(currentPacket.getTranslation());
+        //Set the furigana, transitivity, translation, and verb type labels according to the info packet for the given verb.
+        furiganaLabel.setText(englishOrJapanese ? currentPacket.getRomaji() : furigana);
         transitivityLabel.setText(encodedStrings(currentPacket.getTransitivity()));
+        translationLabel.setText(currentPacket.getTranslation());
+        verbTypeLabel.setText(encodedStrings(currentPacket.getType()));
         
+        //Enable all speech buttons
         for (JButton button : speakButtons)
             button.setEnabled(true);
         
+        //The actual logical breakdown for the conjugation of all Japanese verbs except for kuru.
         switch (lexicon.get(word).getType()) {
             case GODAN:
                 for (byte n = 0; n < conjugationTypes.length; n++) {
@@ -385,7 +420,7 @@ public class Conjugator extends JPanel implements ActionListener {
                             else if (n == CAUSATIVE)
                                 conjugatedLabels[n].setText(curr.substring(0, curr.length() - 2) + "せる");
                             else if (n == CAUSATIVE_PASSIVE)
-                                conjugatedLabels[n].setText(curr.substring(0, curr.length() - 2) + "せられる");
+                                conjugatedLabels[n].setText(curr.substring(0, curr.length() - 2) + (ending.equals("す") ? "せられる" : "れる"));
                             break;
                         case INFORMAL_PAST:
                         case TE:
@@ -488,7 +523,7 @@ public class Conjugator extends JPanel implements ActionListener {
                 conjugatedLabels[CAUSATIVE].setText(stem + "させる");
                 conjugatedLabels[CAUSATIVE_PASSIVE].setText(stem + "させられる");
                 break;
-            case IRREGULAR:
+            case IRREGULAR: //Break down the irregular cases
                 byte irr = 0;
                 switch (word) {
                     case "来る":
@@ -532,15 +567,22 @@ public class Conjugator extends JPanel implements ActionListener {
                 conjugatedLabels[CAUSATIVE_PASSIVE].setText(stem + "させられる");
                 break;
         }
-        if (!englishOrJapanese && conjugatedLabels[PASSIVE].getText().equals("No Passive Form")) {
+        if (!englishOrJapanese && (conjugatedLabels[PASSIVE].getText().equals("No Passive Form")
+                || conjugatedLabels[PASSIVE].getText().equals("受身形無し"))) {
             conjugatedLabels[PASSIVE].setText("受身形無し");
-            furiganaLabels[PASSIVE].setText("うけみけいな");
-            furiganaLabels[PASSIVE].setBounds(587, (46 * 4) + 94, 100, 25);
+            if (furiganaButton.isSelected())
+                furiganaLabels[PASSIVE].setText("うけみけいな");
+            furiganaLabels[PASSIVE].setBounds(623, (46 * PASSIVE) + 96, 100, 25);
             furiganaLabels[PASSIVE].setVisible(furiganaButton.isSelected());
         }
         repaint();
     }
     
+    /**
+     * Act on events for buttons presses, window movement, and text updates
+     *
+     * @param e the triggered event
+     */
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("furigana")) {
@@ -550,19 +592,26 @@ public class Conjugator extends JPanel implements ActionListener {
         }
         if (command.equals("englishOrJapanese")) {
             englishOrJapanese = !englishOrJapanese;
+            frame.setTitle(englishOrJapanese ? "Japanese Verb Conjugator" : "日本語動詞活用アプリ");
             englishOrJapaneseButton.setText(englishOrJapanese ? "日本語" : "English");
             enterColorSelectorButton.setText(englishOrJapanese ? "Edit Colors" : "色を選ぶ");
+            furiganaButton.setText(englishOrJapanese ? "Furigana" : "振り仮名");
             for (byte i = 0; i < conjugationTypes.length; i++)
                 conjugationTypeLabels[i].setText(englishOrJapanese ? conjugationTypes[i] : conjugationTypesJapanese[i]);
             for (JButton button : speakButtons)
                 button.setText(englishOrJapanese ? "Speak" : "話す");
-            furiganaButton.setText(englishOrJapanese ? "Furigana" : "振り仮名");
             if (currentPacket != null) {
                 verbTypeLabel.setText(encodedStrings(currentPacket.getType()));
                 transitivityLabel.setText(encodedStrings(currentPacket.getTransitivity()));
             }
-            if (conjugatedLabels[PASSIVE].getText().equals("No Passive Form") || conjugatedLabels[PASSIVE].getText().equals("受身形無し"))
+            if (conjugatedLabels[PASSIVE].getText().equals("No Passive Form") || conjugatedLabels[PASSIVE].getText().equals("受身形無し")) {
                 conjugatedLabels[PASSIVE].setText(englishOrJapanese ? "No Passive Form" : "受身形無し");
+                if (furiganaButton.isSelected() && !englishOrJapanese) {
+                    furiganaLabels[PASSIVE].setText("うけみけいな");
+                    furiganaLabels[PASSIVE].setBounds(623, (46 * PASSIVE) + 96, 100, 25);
+                } else
+                    furiganaLabels[PASSIVE].setText("");
+            }
             setLabels();
             repaint();
             return;
@@ -577,16 +626,20 @@ public class Conjugator extends JPanel implements ActionListener {
                 }
             colorFrame = new JFrame();
             ComponentListener colorMoveListener = new ComponentListener() {
+                @Override
                 public void componentResized(ComponentEvent e) {
                 }
                 
+                @Override
                 public void componentMoved(ComponentEvent e) {
                     colorFrameRelativePos = new Point(colorFrame.getX() - frame.getX(), colorFrame.getY() - frame.getY());
                 }
                 
+                @Override
                 public void componentShown(ComponentEvent e) {
                 }
                 
+                @Override
                 public void componentHidden(ComponentEvent e) {
                 }
             };
@@ -613,36 +666,58 @@ public class Conjugator extends JPanel implements ActionListener {
             play(kuruFuriganas[button] + form.substring(1), true);
         } else {
             if (shortForm.isEmpty()) return;
-            if (command.equals("15") && lexicon.get(shortForm).getTransitivity() == INTRANSITIVE) {
+            if (command.equals("15") && lexicon.get(shortForm).getTransitivity() == INTRANSITIVE)
                 play(englishOrJapanese ? "No Passive Form" : "うけみけいなし", !englishOrJapanese);
-                furiganaLabels[PASSIVE].setText("");
-            } else
+            else
                 play(furiganaFull(shortForm, lexicon.get(shortForm).getFurigana(), conjugatedLabels[Byte.parseByte(command)].getText()), true);
         }
     }
     
+    /**
+     *
+     */
+    @SuppressWarnings("unchecked")
     private void initializeLexicon() {
-        lexicon = new HashMap<>();
         try {
-            File excelFile = new File("Lexicon.xlsx");
-            FileInputStream fis = new FileInputStream(excelFile);
-            XSSFWorkbook workbook = new XSSFWorkbook(fis);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            for (Row row : sheet) {
-                String kanji = row.getCell(0).toString();
-                String romaji = row.getCell(2).toString().toLowerCase();
-                String rawMeaning = row.getCell(3).toString();
-                VerbInfoPacket packet = new VerbInfoPacket((byte) row.getCell(4).getNumericCellValue(),
-                        (byte) row.getCell(5).getNumericCellValue(), row.getCell(1).toString(), romaji, rawMeaning);
-                lexicon.putIfAbsent(kanji, packet);
-            }
-            workbook.close();
+            FileInputStream fis = new FileInputStream("rsc/Lexicon.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            lexicon = (HashMap<String, VerbInfoPacket>) ois.readObject();
+            ois.close();
             fis.close();
-            System.out.println("The lexicon contains " + lexicon.keySet().size() + (lexicon.keySet().size() == 1 ? " entry." : " entries."));
-        } catch (Exception ioe) {
-            errorMessage(ioe.getMessage(), false);
+        } catch (IOException | ClassNotFoundException e) {
+            lexicon = new HashMap<>();
+            try {
+                File excelFile = new File("rsc/Lexicon.xlsx");
+                FileInputStream fis = new FileInputStream(excelFile);
+                XSSFWorkbook workbook = new XSSFWorkbook(fis);
+                XSSFSheet sheet = workbook.getSheetAt(0);
+                for (Row row : sheet) {
+                    String kanji = row.getCell(0).toString();
+                    String romaji = row.getCell(2).toString().toLowerCase();
+                    String rawMeaning = row.getCell(3).toString();
+                    VerbInfoPacket packet = new VerbInfoPacket((byte) row.getCell(4).getNumericCellValue(),
+                            (byte) row.getCell(5).getNumericCellValue(), row.getCell(1).toString(), romaji, rawMeaning);
+                    lexicon.putIfAbsent(kanji, packet);
+                }
+                workbook.close();
+                fis.close();
+                System.out.println("The lexicon was created and contains " + lexicon.keySet().size() +
+                        (lexicon.keySet().size() == 1 ? " entry." : " entries."));
+                try {
+                    FileOutputStream fos = new FileOutputStream("rsc/Lexicon.ser");
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+                    oos.writeObject(lexicon);
+                    oos.close();
+                    fos.close();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            } catch (Exception ioe) {
+                errorMessage(ioe.getMessage(), false);
+            }
         }
     }
+    
     
     private void play(String text, boolean japanese) {
         SwingWorker worker = new SwingWorker() {
@@ -660,10 +735,11 @@ public class Conjugator extends JPanel implements ActionListener {
                 byte[] voice = new byte[0];
                 try {
                     voice = tts.speech(params);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 javax.sound.sampled.SourceDataLine line;
+                javax.sound.sampled.AudioFormat format = new javax.sound.sampled.AudioFormat(46000, 16, 1, true, false);
                 javax.sound.sampled.DataLine.Info info = new DataLine.Info(javax.sound.sampled.SourceDataLine.class, format);
                 try {
                     line = (javax.sound.sampled.SourceDataLine) javax.sound.sampled.AudioSystem.getLine(info);
@@ -791,7 +867,6 @@ public class Conjugator extends JPanel implements ActionListener {
         for (JButton button : speakButtons) {
             if (!enabled) button.setEnabled(true);
             button.setForeground(ColorMap.TEXT.color());
-            //button.set
             button.repaint();
             if (!enabled) button.setEnabled(false);
         }
@@ -807,10 +882,17 @@ public class Conjugator extends JPanel implements ActionListener {
     }
     
     private void setLabels() {
-        furiganaLabel.setText(englishOrJapanese ? "Furigana" : "振り仮名");
-        translationLabel.setText(englishOrJapanese ? "English Translation" : "英語翻訳");
-        verbTypeLabel.setText(englishOrJapanese ? "Verb Type" : "動詞種類");
-        transitivityLabel.setText(englishOrJapanese ? "Transitivity" : "推移的 / 自動詞");
+        if (currentPacket == null) {
+            furiganaLabel.setText(englishOrJapanese ? "Romaji" : "振り仮名");
+            transitivityLabel.setText(englishOrJapanese ? "Transitivity" : "推移的 / 自動詞");
+            translationLabel.setText(englishOrJapanese ? "English Translation" : "英語翻訳");
+            verbTypeLabel.setText(englishOrJapanese ? "Verb Type" : "動詞種類");
+        } else {
+            furiganaLabel.setText(englishOrJapanese ? currentPacket.getRomaji() : currentPacket.getFurigana());
+            verbTypeLabel.setText(encodedStrings(currentPacket.getType()));
+            transitivityLabel.setText(encodedStrings(currentPacket.getTransitivity()));
+        }
+        
         if (colorFrame != null)
             ((ColorSelector) colorFrame.getContentPane()).resetLabels();
         autoSuggestor.resetColor();

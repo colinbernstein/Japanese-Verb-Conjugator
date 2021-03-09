@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Text To Speech">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/voicerss_tts.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

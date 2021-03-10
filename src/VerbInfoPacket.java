@@ -1,4 +1,12 @@
-class VerbInfoPacket {
+import java.io.Serializable;
+
+/**
+ * An encapsulated object carrying all relevant information about a Japanese verb
+ *
+ * @author Colin Bernstein
+ * @version 1.4
+ */
+class VerbInfoPacket implements Serializable {
     
     private byte type, transitivity;
     private String furigana, romaji, translation;

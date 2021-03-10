@@ -4,16 +4,26 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * A Color Selector GUI for customizing the appearance of the GUI.
+ *
+ * @author Colin Bernstein
+ * @version 1.4
+ */
 class ColorSelector extends JPanel implements ActionListener {
     
     private JButton[] optionButtons;
     private JButton setDefaultsButton;
     private JPanel[] colorSquares;
-    private static final String[] optionsEnglish = {"Background", "Labels", "Auto-Suggestor", "Text", "Label Borders"};
-    private static final String[] optionsJapanese = {"背景", "ラベル", "自動提案者", "テキスト", "提案枠"};
+    private static final String[] optionsEnglish = {"Background", "Labels", "Auto-Suggestor", "Text", "Label Borders"},
+            optionsJapanese = {"背景", "ラベル", "自動提案者", "テキスト", "提案枠"};
     private Conjugator conjugator;
     private JColorChooser colorChooser;
     
+    /**
+     * Defines all relevant buttons, labels, and menus.
+     * @param conjugator the Conjugator object to build off of
+     */
     ColorSelector(Conjugator conjugator) {
         super();
         this.conjugator = conjugator;
@@ -51,8 +61,6 @@ class ColorSelector extends JPanel implements ActionListener {
         JPanel defaultButtonPane = new JPanel();
         defaultButtonPane.setPreferredSize(new Dimension(180, 120));
         setDefaultsButton = new JButton(conjugator.getEnglishOrJapanese() ? "Set Defaults" : "初期設定");
-        // setDefaultsButton.setBounds(10, 300, 50, 30);
-        //setDefaultsButton.setLocation(10, 300);
         setDefaultsButton.setFont(new Font("TimesRoman", Font.BOLD, 14));
         setDefaultsButton.setActionCommand("defaults");
         setDefaultsButton.addActionListener(this);
@@ -71,6 +79,12 @@ class ColorSelector extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Actions for action listeners.
+     * Redefines the color map according to the text on the pressed button.
+     * Refreshes all GUI windows to reflect these changes.
+     * @param e the event containing the text of the button pressed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -96,6 +110,9 @@ class ColorSelector extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Set the labels to their text in either English or Japanese depending on a value stored in the Conjugator.
+     */
     void resetLabels() {
         boolean englishOrJapanese = conjugator.getEnglishOrJapanese();
         for (byte i = 0; i < optionsEnglish.length; i++)
@@ -104,6 +121,9 @@ class ColorSelector extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Set the borders of the color boxes to a color that is visibly contrasting with it.
+     */
     private void setColorBoxBorders() {
         for (byte i = 0; i < optionsEnglish.length; i++) {
             Color color = ColorMap.getColorFromIndex(i).color();

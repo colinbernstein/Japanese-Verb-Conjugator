@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
  * A Color Selector GUI for customizing the appearance of the GUI.
  *
  * @author Colin Bernstein
- * @version 1.4
+ * @version 1.5
  */
 class ColorSelector extends JPanel implements ActionListener {
     

@@ -12,7 +12,7 @@ import java.util.*;
  * Japanese verb via the input of English, romaji, kana, and kanji
  *
  * @author Colin Bernstein
- * @version 1.4
+ * @version 1.5
  */
 class AutoSuggestor extends JPanel {
     private Conjugator conjugator;

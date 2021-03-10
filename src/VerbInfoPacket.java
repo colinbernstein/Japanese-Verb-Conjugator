@@ -4,7 +4,7 @@ import java.io.Serializable;
  * An encapsulated object carrying all relevant information about a Japanese verb
  *
  * @author Colin Bernstein
- * @version 1.4
+ * @version 1.5
  */
 class VerbInfoPacket implements Serializable {
     

@@ -1,7 +1,7 @@
 /**
  * @Author Colin Bernstein
  * @Title: Japanese Verb Conjugator
- * @version 1.3
+ * @version 1.5
  */
 
 import com.voicerss.tts.AudioFormat;

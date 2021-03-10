@@ -4,7 +4,7 @@ import java.awt.Color;
  * An enumerated type storing the colors of the different types of GUI elements.
  *
  * @author Colin Bernstein
- * @version 1.4
+ * @version 1.5
  */
 enum ColorMap {
     AUTO_SUGGESTOR(Color.WHITE),

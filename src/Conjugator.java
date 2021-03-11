@@ -1,8 +1,3 @@
-/**
- * @Author Colin Bernstein
- * @Title: Japanese Verb Conjugator
- * @version 1.5
- */
 
 import com.voicerss.tts.AudioFormat;
 import com.voicerss.tts.Languages;
@@ -20,6 +15,12 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A Japanese Verb Conjugator using a Swing GUI
+ *
+ * @author Colin Bernstein
+ * @version 1.5
+ */
 public class Conjugator extends JPanel implements ActionListener {
     
     
@@ -290,7 +291,7 @@ public class Conjugator extends JPanel implements ActionListener {
      * If so, get the corresponding data packet for that entry from the lexicon hash table.
      * Dissect the info packet and accordingly display conjugated forms based on the verb class (ichidan, godan, suru, and irregular).
      *
-     * @param word - A verb (in english, romaji, furigana, or kanji)
+     * @param word A verb (in english, romaji, furigana, or kanji)
      */
     void conjugate(String word) {
         if (meaningParser(word).length == 0) {
@@ -318,7 +319,7 @@ public class Conjugator extends JPanel implements ActionListener {
         }
         
         //Form the Japanese stem of the verb and find the ending character(s)
-        //Get the verb's corresponding info packet from the lexicon TreeSet
+        //Get the verb's corresponding info packet from the lexicon HashSet
         currentPacket = lexicon.get(word);
         String stem = word.substring(0, word.length() - (currentPacket.getType() != SURU ? 1 : 2));
         String ending = word.substring(word.length() - (currentPacket.getType() != SURU ? 1 : 2));
@@ -579,7 +580,7 @@ public class Conjugator extends JPanel implements ActionListener {
     }
     
     /**
-     * Act on events for buttons presses, window movement, and text updates
+     * Act on events for buttons presses, window movement, and text updates.
      *
      * @param e the triggered event
      */
@@ -648,8 +649,6 @@ public class Conjugator extends JPanel implements ActionListener {
                     (int) (frame.getY() + colorFrameRelativePos.getY()), 300, 300);
             colorFrame.setResizable(false);
             colorFrame.setAlwaysOnTop(true);
-            //frame.setComponentZOrder(autoSuggestor.getAutoSuggestionPopUpWindow(), 0);
-            //frame.setComponentZOrder(colorFrame.getContentPane(), 1);
             JComponent newContentPane = new ColorSelector(this);
             newContentPane.setOpaque(true);
             colorFrame.setContentPane(newContentPane);
@@ -674,7 +673,8 @@ public class Conjugator extends JPanel implements ActionListener {
     }
     
     /**
-     *
+     * Attempt to open an input stream from the lexicon.
+     * If found, iterate through the entire list and create an entry in the HashSet
      */
     @SuppressWarnings("unchecked")
     private void initializeLexicon() {
@@ -718,7 +718,12 @@ public class Conjugator extends JPanel implements ActionListener {
         }
     }
     
-    
+    /**
+     * Plays the text to speech sound file for a given piece of text and whether that text is English or Japanese.
+     *
+     * @param text     The text to be converted to speech and played
+     * @param japanese a boolean representing the language of text (English = false and Japanese = true)
+     */
     private void play(String text, boolean japanese) {
         SwingWorker worker = new SwingWorker() {
             @Override
@@ -760,6 +765,14 @@ public class Conjugator extends JPanel implements ActionListener {
         worker.execute();
     }
     
+    /**
+     * Given the kanji short form and its equivalent furigana, derive the furigana for a given conjugated form/
+     *
+     * @param shortForm     The short form of the verb written in kanji
+     * @param furiganaShort The short form of the verb written in furigana
+     * @param form          The conjugated verb (of any form) written in kanji
+     * @return The furigana of the given conjugated verb (form)
+     */
     private String furiganaFull(String shortForm, String furiganaShort, String form) {
         byte numOfKana = 0;
         for (char c : shortForm.toCharArray())
@@ -769,17 +782,19 @@ public class Conjugator extends JPanel implements ActionListener {
         return furiganaShort.substring(0, furiganaShort.length() - numOfKana) + form.substring(numOfKanji);
     }
     
+    /**
+     * Given the short form of a verb written in kanji and kana its the furigana equivalent,
+     * return the furigana of the kanji in the verb.
+     * Display this result at the appropriate coordinates for each conjugated form.
+     *
+     * @param shortForm     The short form of the verb written in kanji
+     * @param furiganaShort The short form of the verb written in only kana
+     */
     private void furiganaOfKanji(String shortForm, String furiganaShort) {
         byte numOfKana = 0;
-        //List<String> furiganas = new ArrayList<>();
-        //boolean consecutiveKanji = false;
         for (char c : shortForm.toCharArray())
-            if ((c >= 'あ' && c <= 'ん') || (c >= 'ア' && c <= 'ン')) {
+            if ((c >= 'あ' && c <= 'ん') || (c >= 'ア' && c <= 'ン'))
                 numOfKana++;
-                //consecutiveKanji = false;
-            } //else {
-        //    consecutiveKanji = true;
-        // }
         byte numOfKanji = (byte) (shortForm.length() - numOfKana);
         if (numOfKanji != 0)
             for (JLabel label : furiganaLabels)
@@ -791,6 +806,15 @@ public class Conjugator extends JPanel implements ActionListener {
             furiganaLabels[PASSIVE].setText("");
     }
     
+    /**
+     * Returns a String array of the trimmed english meanings of a Japanese verb.
+     * Removes the word "to" as well as any parentheticals or punctuation marks accordingly.
+     *
+     * @param meaning A long untrimmed String consisting of several meanings
+     *                and parenthetical details separated by various characters
+     * @return a String array of the trimmed english meanings given
+     * @throws IllegalArgumentException May throw an exception if there are any unclosed parentheticals.
+     */
     String[] meaningParser(String meaning) throws IllegalArgumentException {
         meaning = meaning.trim();                                            //Trim
         char[] seq = meaning.toCharArray();                                  //Remove illegal characters
@@ -818,6 +842,13 @@ public class Conjugator extends JPanel implements ActionListener {
         return meanings;
     }
     
+    /**
+     * Returns a uniform and clean version of the messy raw
+     * String for english definition usually given by the lexicon.
+     *
+     * @param kanji The short form of the verb in kanji
+     * @return a uniform and clean version of the messy raw definition attached to the parameter
+     */
     String concatMeanings(String kanji) {
         String[] meanings = meaningParser(lexicon.get(kanji).getTranslation());
         StringBuilder entry = new StringBuilder(kanji + " - " + meanings[0]);
@@ -835,6 +866,12 @@ public class Conjugator extends JPanel implements ActionListener {
         return entry.toString();
     }
     
+    /**
+     * Returns the English or Japanese (based on the selected mode) words for verb types and transitivities.
+     *
+     * @param code The encoded numeral representing the desired label
+     * @return The English or Japanese (based on the selected mode) word for a verb type and transitivity
+     */
     private String encodedStrings(byte code) {
         switch (code) {
             case GODAN: return englishOrJapanese ? "Godan" : "五段";
@@ -848,6 +885,10 @@ public class Conjugator extends JPanel implements ActionListener {
         throw new IllegalArgumentException("Illegal verb code: " + code);
     }
     
+    /**
+     * Set the colors of all GUI elements and refresh the
+     * Conjugator's, AutoSuggestor's, and ColorSelector's JFrame and JPanel.
+     */
     void setColors() {
         frame.getContentPane().setBackground(makeTransparent(ColorMap.BACKGROUND.color()));
         frame.getContentPane().setForeground(makeTransparent(ColorMap.BACKGROUND.color()));
@@ -881,6 +922,10 @@ public class Conjugator extends JPanel implements ActionListener {
         autoSuggestor.resetColor();
     }
     
+    /**
+     * Set the labels of all relevant GUI elements in the
+     * Conjugator, AutoSuggestor, and ColorSelector as well as refresh the display.
+     */
     private void setLabels() {
         if (currentPacket == null) {
             furiganaLabel.setText(englishOrJapanese ? "Romaji" : "振り仮名");
@@ -899,6 +944,9 @@ public class Conjugator extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Set all labels to empty Strings and refresh the display, effectively clearing all text.
+     */
     private void clear() {
         for (JButton button : speakButtons)
             button.setEnabled(false);
@@ -913,6 +961,12 @@ public class Conjugator extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Respond to a thrown exception by displaying a corresponding error message.
+     *
+     * @param in             The incoming thrown error message
+     * @param missingOrError A boolean representing the two types of errors
+     */
     private void errorMessage(String in, boolean missingOrError) {
         clear();
         if (missingOrError) {
@@ -925,14 +979,30 @@ public class Conjugator extends JPanel implements ActionListener {
         setLabels();
     }
     
+    /**
+     * Given a Color instance, return a transparent version of it (a=255)
+     *
+     * @param color an instance of Color to be made transparent
+     * @return a transparent version of color (A value set to 255)
+     */
     private Color makeTransparent(Color color) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
     }
     
+    /**
+     * An encapsulating method for reaching the lexicon HashSet from other windows
+     *
+     * @return the lexicon HashSet object
+     */
     Map<String, VerbInfoPacket> getLexicon() {
         return lexicon;
     }
     
+    /**
+     * Returns true if the currently selected language is English and false if it is Japanese.
+     *
+     * @return true if the currently selected language is English and false if it is Japanese
+     */
     boolean getEnglishOrJapanese() {
         return englishOrJapanese;
     }

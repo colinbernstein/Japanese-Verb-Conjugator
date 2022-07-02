@@ -1,8 +1,0 @@
-#!/bin/sh
-
-DIR=$1
-APP_JAR=Conjugator.jar
-APP_NAME="Conjugator"
-
-cd "$DIR"
-java -Xdock:name="$APP_NAME" -Xdock:icon="$DIR/../Resources/Conjugator.icns" -cp "$DIR;.;" -jar "$DIR/$APP_JAR"
